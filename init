@@ -1,2 +1,2 @@
 sudo apt-get install python-pip
-sudo pip install gym tensorflow keras
+sudo pip install gym tensorflow keras h5py

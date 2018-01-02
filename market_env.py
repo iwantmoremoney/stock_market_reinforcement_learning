@@ -18,11 +18,12 @@ class MarketEnv(gym.Env):
         self.dataMap = {}
 
         for filename in filenames:
-            data = {}
+            data = []
             lastClose = 0
             lastVolume = 0
             try:
-                for line in open( filename, 'r' ):
+                f = open( filename, 'r' )
+                for line in f: 
                     if line.strip() != "":
                         dt, openPrice, high, close, low, volume = line.strip().split(",")
                         try:
@@ -38,7 +39,7 @@ class MarketEnv(gym.Env):
                                     low_ = (low - close) / close
                                     volume_ = (volume - lastVolume) / lastVolume
                                     
-                                    data[dt] = (high_, low_, close_, volume_)
+                                    data.append( ( high_, low_, close_, volume_, dt ) )
 
                                 lastClose = close
                                 lastVolume = volume
@@ -64,7 +65,7 @@ class MarketEnv(gym.Env):
 
     def _step(self, action):
         if self.done:
-            return self.state, self.reward, self.done, {}
+            return self.state, self.reward, self.done, {'dt': 'N/A', 'cum': 0}
 
         self.reward = 0
         if self.actions[action] == "LONG":
@@ -96,16 +97,17 @@ class MarketEnv(gym.Env):
         else:
             pass
 
-        vari = self.target[self.targetDates[self.currentTargetIndex]][2]
+        vari = self.target[self.currentTargetIndex-1][2]
         self.cum = self.cum * (1 + vari)
 
         for i in xrange(len(self.boughts)):
             self.boughts[i] = self.boughts[i] * MarketEnv.PENALTY * (1 + vari * (-1 if sum(self.boughts) < 0 else 1))
 
         self.defineState()
-        self.currentTargetIndex += 1
-        if self.currentTargetIndex >= len(self.targetDates) or self.endDate <= self.targetDates[self.currentTargetIndex]:
+        if self.currentTargetIndex == len(self.targetDates) - 1:
             self.done = True
+        else:
+            self.currentTargetIndex += 1
 
         if self.done:
             for b in self.boughts:
@@ -115,15 +117,17 @@ class MarketEnv(gym.Env):
 
             self.boughts = []
 
+        print len(self.targetDates), self.currentTargetIndex
         return self.state, self.reward, self.done, {"dt": self.targetDates[self.currentTargetIndex], "cum": self.cum, "code": self.targetCode}
 
     def _reset(self):
         r = int(random() * len(self.targetCodes))
-        print self.targetCodes
         self.targetCode = self.targetCodes[r]
-        self.target = self.dataMap[self.targetCode]
-        self.targetDates = sorted(self.target.keys())
-        self.currentTargetIndex = self.scope
+        pick = self.dataMap[self.targetCode]
+        start = int( random() * ( len(pick)-60 ) )
+        self.target = pick[start:start+60] 
+        self.targetDates = [ x[4] for x in self.target]
+        self.currentTargetIndex = 0 
         self.boughts = []
         self.cum = 1.
 
@@ -162,10 +166,11 @@ class MarketEnv(gym.Env):
         subjectVolume = []
         for i in xrange(self.scope):
             try:
-                subject.append([self.target[self.targetDates[self.currentTargetIndex - 1 - i]][2]])
-                subjectVolume.append([self.target[self.targetDates[self.currentTargetIndex - 1 - i]][3]])
+                subject.append([self.target[self.currentTargetIndex - 1 - i][2]])
+                subjectVolume.append([self.target[self.currentTargetIndex - 1 - i][3]])
             except Exception, e:
-                print self.targetCode, self.currentTargetIndex, i, len(self.targetDates)
+                print e
+                print 'Error', self.targetCode, self.currentTargetIndex, i, len(self.targetDates)
                 self.done = True
         tmpState.append([[subject, subjectVolume]])
 
