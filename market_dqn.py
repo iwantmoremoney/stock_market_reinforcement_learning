@@ -62,20 +62,8 @@ if __name__ == "__main__":
 	import sys
 	import codecs
 
-	codeListFilename = sys.argv[1]
-	modelFilename = sys.argv[2] if len(sys.argv) > 2 else None
-
-	codeMap = {}
-	f = codecs.open(codeListFilename, "r", "utf-8")
-
-	for line in f:
-		if line.strip() != "":
-			tokens = line.strip().split(",") if not "\t" in line else line.strip().split("\t")
-			codeMap[tokens[0]] = tokens[1]
-
-	f.close()
-
-	env = MarketEnv(dir_path = "./data/", target_codes = codeMap.keys(), input_codes = [], start_date = "2013-08-26", end_date = "2015-08-25", sudden_death = -1.0)
+        filenames = sys.argv[1:]
+	env = MarketEnv( filenames=filenames, sudden_death = -1.0)
 
 	# parameters
 	epsilon = .5  # exploration
@@ -86,7 +74,7 @@ if __name__ == "__main__":
 	discount = 0.8
 
 	from keras.optimizers import SGD
-	model = MarketModelBuilder(modelFilename).getModel()
+	model = MarketModelBuilder('model').getModel()
 	sgd = SGD(lr = 0.001, decay = 1e-6, momentum = 0.9, nesterov = True)
 	model.compile(loss='mse', optimizer='rmsprop')
 

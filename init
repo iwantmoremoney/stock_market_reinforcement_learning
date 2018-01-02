@@ -1,2 +1,2 @@
 sudo apt-get install python-pip
-pip install gym tensorflow
+sudo pip install gym tensorflow keras
