@@ -2,6 +2,7 @@ import numpy as np
 
 from market_env import MarketEnv
 from market_model_builder import MarketModelBuilder
+from datetime import datetime
 
 class bcolors:
     HEADER = '\033[95m'
@@ -84,6 +85,7 @@ if __name__ == "__main__":
     # Train
     win_cnt = 0
     for e in range(epoch):
+        start_time = datetime.now()
         loss = 0.
         env.reset()
         game_over = False
@@ -131,6 +133,7 @@ if __name__ == "__main__":
             win_cnt += 1
 
         print("Epoch {:03d}/{} | Loss {:.4f} | Win count {} | Epsilon {:.4f}".format(e, epoch, loss, win_cnt, epsilon))
+        print("Time: {}".format(datetime.now() - start_time) )
         # Save trained model weights and architecture, this will be used by the visualization code
         model.save_weights( "model", overwrite=True)
         epsilon = max(min_epsilon, epsilon * 0.99)

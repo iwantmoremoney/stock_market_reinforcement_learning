@@ -117,7 +117,7 @@ class MarketEnv(gym.Env):
 
             self.boughts = []
 
-        print len(self.targetDates), self.currentTargetIndex
+        #print len(self.targetDates), self.currentTargetIndex
         return self.state, self.reward, self.done, {"dt": self.targetDates[self.currentTargetIndex], "cum": self.cum, "code": self.targetCode}
 
     def _reset(self):
