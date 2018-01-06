@@ -113,6 +113,7 @@ if __name__ == "__main__":
 
             # apply action, get rewards and new state
             input_t, reward, game_over, info = env.step(action)
+            #print input_t[0]
             cumReward += reward
 
             if env.actions[action] == "LONG" or env.actions[action] == "SHORT":
@@ -132,7 +133,7 @@ if __name__ == "__main__":
         if cumReward > 0 and game_over:
             win_cnt += 1
 
-        print("Epoch {:03d}/{} | Loss {:.4f} | Win count {} | Epsilon {:.4f}".format(e, epoch, loss, win_cnt, epsilon))
+        print("Epoch {:03d}/{} | Loss {:.4f} | Reward {:.4f} | Win count {} | Epsilon {:.4f}".format(e, epoch, loss, cumReward, win_cnt, epsilon))
         print("Time: {}".format(datetime.now() - start_time) )
         # Save trained model weights and architecture, this will be used by the visualization code
         model.save_weights( "model", overwrite=True)
